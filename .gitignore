@@ -1,3 +1,5 @@
+*~
+.ipynb_checkpoints
 build/
 dist/
 nonlindyn/__pycache__/
