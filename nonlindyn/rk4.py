@@ -1,9 +1,15 @@
-
-
 import numpy as np
 import itertools
+from collections.abc import Callable, Generator
+from typing import Union
 
-def rk4yield(f, xinit, start=0.0, step=None, raster=1):
+
+
+def rk4yield(
+        f: Callable[[np.ndarray], np.ndarray],
+        xinit: np.ndarray,
+        start: float = 0.0, step=Union[float,None],
+        raster: int=1) -> Generator[tuple[float,np.ndarray],None, None]:
     """
     Generator function for the Runge Kutta algorithm in autonomous case.
     
@@ -54,7 +60,8 @@ def rk4yield(f, xinit, start=0.0, step=None, raster=1):
             x +=  h/6.0 * (k1 + 2*k2 + 2*k3 + k4)
             
                 
-def rk4trajectory(*args, **kwargs):
+def rk4trajectory(f: Callable[[np.ndarray], np.ndarray],
+                  *args, **kwargs) -> tuple[np.ndarray, np.ndarray]:
     """
     Wrapper for rk4yield which gives back full trajectory
     
@@ -91,7 +98,9 @@ def rk4trajectory(*args, **kwargs):
     if not ( 0 < (stop-start)/step < float("inf") ):
         raise ValueError("'stop' cannot be reached in a finite number of steps")
     
-    integrator = itertools.takewhile(lambda txv : (txv[0]-stop)/step < 1/2, rk4yield(*args, **kwargs))
+    integrator = itertools.takewhile(
+        lambda txv : (txv[0]-stop)/step < 1/2, rk4yield(f, *args, **kwargs)
+    )
     T, X = zip(*integrator)
     return np.array(T), np.array(X)
 
