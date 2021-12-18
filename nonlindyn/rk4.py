@@ -60,8 +60,11 @@ def rk4yield(
             x +=  h/6.0 * (k1 + 2*k2 + 2*k3 + k4)
             
                 
-def rk4trajectory(f: Callable[[np.ndarray], np.ndarray],
-                  *args, **kwargs) -> tuple[np.ndarray, np.ndarray]:
+def rk4trajectory(
+        f: Callable[[np.ndarray], np.ndarray],
+        xinit: np.ndarray,
+        **kwargs
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Wrapper for rk4yield which gives back full trajectory
     
@@ -99,7 +102,8 @@ def rk4trajectory(f: Callable[[np.ndarray], np.ndarray],
         raise ValueError("'stop' cannot be reached in a finite number of steps")
     
     integrator = itertools.takewhile(
-        lambda txv : (txv[0]-stop)/step < 1/2, rk4yield(f, *args, **kwargs)
+        lambda txv : (txv[0]-stop)/step < 1/2,
+        rk4yield(f, xinit, **kwargs)
     )
     T, X = zip(*integrator)
     return np.array(T), np.array(X)
