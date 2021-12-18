@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup # type: ignore
 import site
 import sys
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
