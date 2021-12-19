@@ -1,0 +1,7 @@
+[filter "dropoutput_ipynb"]
+        clean = jupyter nbconvert --to=notebook --stdout --stdin --ClearMetadataPreprocessor.enabled=True --ClearOutputPreprocessor.enabled=True 
+        smudge = cat
+
+[core]
+	attributesfile = ./.gitattributes
+
