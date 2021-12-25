@@ -13,18 +13,16 @@ def jacobian(f, epsilon = 1.0e-9):
 
 def newton_method(
     f: Callable[[np.ndarray], np.ndarray],
-    X0: np.ndarray, 
+    X: np.ndarray, 
     itmax: int=10, 
-    epsilon: float=1e-14
+    epsilon: float=1e-14,
+    jac = None
 ):
-    X = X0.copy()
+    jac = jacobian(f) if jac is None else jac
     for i in range(itmax):
-        JX = jacobian(f)(X)
-        fX = f(X)
-        DX = np.linalg.solve(JX, fX)
-        X -= DX
-        if np.linalg.norm(DX) <epsilon:
-            break
+        DX = np.linalg.solve(jac(X), f(X))
+        X = X - DX
+        if np.linalg.norm(DX) <epsilon: break
     else:
         raise RuntimeError(
             f"Newton's method did not converge after {itmax} steps.\n"
