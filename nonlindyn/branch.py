@@ -5,6 +5,7 @@ import itertools as it
 import nonlindyn as nld
 import inspect
 from functools import wraps
+import dataclasses
 from dataclasses import dataclass
 
 
@@ -95,9 +96,9 @@ class BoundPoint:
     
     def trajectory(self, step, raster=1):
         f = lambda X: self.f(X, self.p)
-        rk4y = rk4yield(self.f, self.X, step=step, raster=raster)
+        rk4y = nld.rk4yield(f, self.X, step=step, raster=raster)
         for (t, X) in rk4y:
-            yield (t, self.__class__(self.f, X, self.p))
+            yield BranchPoint(t, self.__class__(self.f, X, self.p))
     
     def follow_FP(self, parameter, delta=0.1):
         if parameter not in self.p:
@@ -112,3 +113,27 @@ class BoundPoint:
         for x in follow_path(f, x0, tangent, epsilon=abs(delta)):
             yield self.__class__(self.f, x[:-1], (self.p |{parameter: x[-1]}))
 
+
+@dataclass(order=True)
+class BranchPoint:
+    s: float
+    bp: BoundPoint = dataclasses.field(compare=False)
+    def less_than(self,t):
+        return self.s<t
+    def as_tuple(self):
+        return (self.s, self.bp.X, self.bp.p)
+    
+def cut_branch(startstop, iterator):
+    try:
+        start, stop = startstop
+        iterator = it.dropwhile(
+            lambda brp: brp.less_than(start), iterator
+        )
+    except TypeError:
+        stop = startstop
+    return it.takewhile(
+        lambda brp: brp.less_than(stop), iterator
+    )
+    
+def as_tuple(iterator):
+    return zip(*map(lambda brp: brp.as_tuple(), iterator))
